@@ -1,6 +1,7 @@
 import os
 
 import mysql.connector
+from mysql.connector import Error
 
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, RedirectResponse

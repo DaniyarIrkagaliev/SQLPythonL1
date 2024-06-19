@@ -46,6 +46,7 @@ async def update_student(request: Request, textId: int, textEd1: str, textEd2: s
     return await index(request)
 
 
+# скрипт создания и заполнения бд в виде питоновского метода
 def create():
     try:
         create_db_query = "CREATE DATABASE IF NOT EXISTS test;"
@@ -110,6 +111,7 @@ def create():
         print(e)
 
 
+# получение студентов
 def getStudents():
     cur.execute("USE test;")
     cur.execute("SELECT * FROM myarttable")
@@ -130,15 +132,18 @@ class Student:
         self.keywords = keywords
 
 
+# создание списка студентов через экземпляр класса для работы с ними на фронте
 students = getStudents()
 
 
+# удаление
 def deleteStudent(id):
     cur.execute("DELETE FROM files WHERE id_my = " + str(id))
     cur.execute("DELETE FROM myarttable WHERE id = " + str(id))
     myconn.commit()
 
 
+# обновление
 def updateStudent(id, text, description, keywords):
     cur.execute(
         "UPDATE myarttable SET text='" + text + "', description='" + description + "', keywords='" + keywords + "' WHERE id = " + str(

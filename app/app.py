@@ -8,9 +8,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-
 app = FastAPI()
-create()
 script_dir = os.path.dirname(__file__)
 app.mount("/static", StaticFiles(directory=os.path.join(script_dir, "static/")), name="static")
 
@@ -21,6 +19,9 @@ cur.execute("SET NAMES utf8;")
 
 templates = Jinja2Templates(directory=os.path.join(script_dir, "templates/"))
 
+
+# cur.execute("select * FROM students")
+# print(cur.fetchall())
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
@@ -52,7 +53,7 @@ def create():
         create_db_query = "CREATE DATABASE IF NOT EXISTS test;"
         cur.execute(create_db_query)
 
-        create_files = ('CREATE TABLE `files` ('
+        create_files = ('CREATE IF NOT EXISTS TABLE `files` ('
                         '`id_file` int(11) NOT NULL,'
                         '`id_my` int(11) NOT NULL,'
                         '`description` text NOT NULL,'
@@ -64,46 +65,44 @@ def create():
 
         insert_val = (
             "INSERT INTO `files` (`id_file`, `id_my`, `description`, `name_origin`, `path`, `date_upload`) VALUES "
-            "(16, 17, 'Закачка из менеджера', 'Стратегии в виртуальном футболе.pdf', "
-            "'files/Стратегии в виртуальном футболе.pdf', '16-03-2022  08:41:22');")
+            "(16, 131, 'исследовательский проект', 'БПЛА в Сельском хозяйстве. Проблемы внедрения в АПК РФ.pdf', "
+            "'files/БПЛА в Сельском хозяйстве. Проблемы внедрения в АПК РФ.pdf', '16-03-2024  18:42:12');")
 
         cur.execute(insert_val)
 
-        create_myarttable = ("CREATE TABLE `myarttable` ("
-                             "`id` int(11) NOT NULL,"
-                             "`text` text NOT NULL,"
-                             "`description` text NOT NULL,"
-                             "`keywords` text NOT NULL)"
-                             " ENGINE=InnoDB DEFAULT CHARSET=cp1251;")
+        create_students = ("CREATE TABLE `students` ("
+                           "`id` int(11) NOT NULL,"
+                           "`text` text NOT NULL,"
+                           "`description` text NOT NULL,"
+                           "`keywords` text NOT NULL)"
+                           " ENGINE=InnoDB DEFAULT CHARSET=cp1251;")
 
-        cur.execute(create_myarttable)
+        cur.execute(create_students)
 
-        insert_val = ("INSERT INTO `myarttable` (`id`, `text`, `description`, `keywords`) VALUES "
-                      "(17, 'Baranov', 'Engeneer', 'Ivanov'), "
-                      "(20, 'Fedorov', 'Cpp, Delphi, PHP, JS', '3t'), "
-                      "(92, 'Daniel', 'Artist', 'Theater Saturday'), "
-                      "(93, 'Andrew', 'Poet', 'First Electrotechnical University'), "
-                      "(94, 'Nikita', 'Student', 'Technological Institute'), "
-                      "(95, 'Ilya', 'Salesman', 'Hypermarket'), "
-                      "(96, 'Matvey', 'Programmer', 'Metropolitan College'), "
-                      "(97, 'Fedor', 'Loader', 'St. Petersburg State University'), "
-                      "(98, 'Ivan', 'Student', 'LETI'), (99, 'Alexey', 'Engineer', 'ITMO');")
+        insert_val = ("INSERT INTO students (id, text, description, keywords) VALUES "
+                      "(131, 'Boldyrev', 'Engeneer', 'Java'),"
+                      "(132, 'Smirnikh', 'Student', 'Voronezh State University'),"
+                      " (133, 'Krikunov', 'full-stack developer', 'python'),"
+                      " (134, 'Malishev', 'Poet', 'Filmmaker'), (136, 'Medvedev',"
+                      " 'Student', 'Volgograd State University'), (137, 'Artemiev',"
+                      " 'Musician', 'Last Summer Day indie-rock band')"
+                      ";")
 
         cur.execute(insert_val)
 
         alter_table = "ALTER TABLE `files` ADD PRIMARY KEY (`id_file`), ADD KEY `id_my` (`id_my`);"
         cur.execute(alter_table)
 
-        alter_table = "ALTER TABLE `myarttable` ADD PRIMARY KEY (`id`);"
+        alter_table = "ALTER TABLE `students` ADD PRIMARY KEY (`id`);"
         cur.execute(alter_table)
 
         alter_table = "ALTER TABLE `files` MODIFY `id_file` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;"
         cur.execute(alter_table)
 
-        alter_table = "ALTER TABLE `myarttable` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=100;"
+        alter_table = "ALTER TABLE `students` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=100;"
         cur.execute(alter_table)
 
-        alter_table = "ALTER TABLE `files`ADD CONSTRAINT `files_ibfk_1` FOREIGN KEY (`id_my`) REFERENCES `myarttable` (`id`);"
+        alter_table = "ALTER TABLE `files`ADD CONSTRAINT `files_ibfk_1` FOREIGN KEY (`id_my`) REFERENCES `students` (`id`);"
         cur.execute(alter_table)
         myconn.commit()
 
@@ -111,10 +110,13 @@ def create():
         print(e)
 
 
+create()
+
+
 # получение студентов
 def getStudents():
     cur.execute("USE test;")
-    cur.execute("SELECT * FROM myarttable")
+    cur.execute("SELECT * FROM students")
     result = cur.fetchall()
     students = []
     for student in result:
@@ -139,25 +141,25 @@ students = getStudents()
 # удаление
 def deleteStudent(id):
     cur.execute("DELETE FROM files WHERE id_my = " + str(id))
-    cur.execute("DELETE FROM myarttable WHERE id = " + str(id))
+    cur.execute("DELETE FROM students WHERE id = " + str(id))
     myconn.commit()
 
 
 # обновление
 def updateStudent(id, text, description, keywords):
     cur.execute(
-        "UPDATE myarttable SET text='" + text + "', description='" + description + "', keywords='" + keywords + "' WHERE id = " + str(
+        "UPDATE students SET text='" + text + "', description='" + description + "', keywords='" + keywords + "' WHERE id = " + str(
             id))
     myconn.commit()
 
 
 # Генерит запрос на удаление
 def get_sql_delete(id):
-    return f'DELETE FROM myarttable WHERE id = {id};'
+    return f'DELETE FROM students WHERE id = {id};'
 
 
 # Генерит запрос на обновление
 def get_sql_update(id, text, description, keywords):
-    return f'''UPDATE myarttable 
+    return f'''UPDATE students 
                SET text = {text}, description = {description}, keywords = {keywords}
                WHERE id = {id}'''
